@@ -1,0 +1,13 @@
+.nav-admin {
+  background: linear-gradient(to right, #0d47a1, #1976d2);
+  padding: 1rem;
+}
+
+.nav-links .btn {
+  transition: all 0.3s ease-in-out;
+}
+
+.nav-links .btn:hover {
+  background-color: #ffffff !important;
+  color: #1976d2 !important;
+}

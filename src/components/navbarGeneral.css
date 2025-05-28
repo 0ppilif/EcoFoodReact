@@ -1,0 +1,16 @@
+.navbar-eco {
+  background: linear-gradient(to right, #2e7d32, #66bb6a);
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.navbar-eco .btn {
+  border: 1px solid #fff;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.navbar-eco .btn:hover {
+  background-color: white;
+  color: #2e7d32;
+}
