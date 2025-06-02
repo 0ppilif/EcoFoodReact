@@ -1,109 +1,142 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import {
   obtenerEmpresas,
-  crearEmpresa,
-  eliminarEmpresa,
-  editarEmpresa
+  eliminarEmpresa
 } from "../../services/empresaFirebase";
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import { auth, db } from "../../services/firebase";
+import { setDoc, doc } from "firebase/firestore";
 import Swal from "sweetalert2";
+import "../../styles/adminBackground.css";
 
 export default function AdminEmpresas() {
   const [empresas, setEmpresas] = useState([]);
-  const [form, setForm] = useState({ nombre: "", rut: "", direccion: "", comuna: "", email: "", telefono: "" });
-  const [modoEditar, setModoEditar] = useState(false);
-  const [idActual, setIdActual] = useState(null);
+  const [form, setForm] = useState({
+    nombre: "",
+    rut: "",
+    direccion: "",
+    comuna: "",
+    email: "",
+    telefono: "",
+    password: ""
+  });
 
   const cargarEmpresas = async () => {
     const data = await obtenerEmpresas();
     setEmpresas(data);
   };
 
-  useEffect(() => { cargarEmpresas(); }, []);
+  useEffect(() => {
+    cargarEmpresas();
+  }, []);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
-  const resetForm = () => {
-    setForm({ nombre: "", rut: "", direccion: "", comuna: "", email: "", telefono: "" });
-    setModoEditar(false);
-    setIdActual(null);
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleCrearEmpresa = async (e) => {
     e.preventDefault();
-    try {
-      if (modoEditar) {
-        await editarEmpresa(idActual, form);
-        Swal.fire("Editado", "Empresa actualizada", "success");
-      } else {
-        await crearEmpresa(form);
-        Swal.fire("Creada", "Empresa registrada", "success");
-      }
-      cargarEmpresas(); resetForm();
-    } catch {
-      Swal.fire("Error", "No se pudo guardar", "error");
-    }
-  };
+    const { nombre, rut, direccion, comuna, email, telefono, password } = form;
 
-  const handleEditar = (empresa) => {
-    setForm(empresa);
-    setModoEditar(true);
-    setIdActual(empresa.id);
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await sendEmailVerification(cred.user);
+
+      await setDoc(doc(db, "usuarios", cred.user.uid), {
+        nombre,
+        rut,
+        direccion,
+        comuna,
+        email,
+        telefono,
+        tipo: "empresa"
+      });
+
+      Swal.fire("Empresa creada", "Se envió un correo de verificación", "success");
+      setForm({
+        nombre: "", rut: "", direccion: "", comuna: "",
+        email: "", telefono: "", password: ""
+      });
+      cargarEmpresas();
+    } catch (error) {
+      Swal.fire("Error", error.message, "error");
+    }
   };
 
   const handleEliminar = async (id) => {
     const confirm = await Swal.fire({
-      title: "¿Eliminar?",
-      text: "No se puede deshacer",
+      title: "¿Eliminar empresa?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Sí"
+      confirmButtonText: "Sí, eliminar"
     });
+
     if (confirm.isConfirmed) {
       await eliminarEmpresa(id);
-      Swal.fire("Eliminado", "Empresa eliminada", "success");
       cargarEmpresas();
     }
   };
 
   return (
-    <div>
-      <h3>{modoEditar ? "Editar Empresa" : "Crear Empresa"}</h3>
-      <form onSubmit={handleSubmit} className="mb-3 row g-2">
-        {["nombre", "rut", "direccion", "comuna", "email", "telefono"].map((campo, i) => (
-          <div className="col-md-4" key={i}>
-            <input
-              name={campo}
-              value={form[campo]}
-              onChange={handleChange}
-              placeholder={campo.charAt(0).toUpperCase() + campo.slice(1)}
-              className="form-control"
-              required={campo !== "telefono"}
-            />
-          </div>
-        ))}
-        <div className="col-md-12">
-          <button className="btn btn-success me-2">{modoEditar ? "Guardar Cambios" : "Crear"}</button>
-          {modoEditar && <button className="btn btn-secondary" onClick={resetForm} type="button">Cancelar</button>}
-        </div>
-      </form>
+    <div className="admin-background">
+      <div className="admin-overlay">
+        <div className="admin-card">
+          <h3>Registrar Empresa</h3>
+          <form onSubmit={handleCrearEmpresa} className="row g-2 mb-4">
+            {[
+              { name: "nombre", type: "text", max: 50 },
+              { name: "rut", type: "text", max: 12 },
+              { name: "direccion", type: "text", max: 100 },
+              { name: "comuna", type: "text", max: 50 },
+              { name: "email", type: "email", max: 100 },
+              { name: "telefono", type: "text", max: 15 },
+              { name: "password", type: "password", max: 20 }
+            ].map((campo, i) => (
+              <div className="col-md-6" key={i}>
+                <input
+                  name={campo.name}
+                  type={campo.type}
+                  maxLength={campo.max}
+                  minLength={campo.name === "password" ? 6 : undefined}
+                  required={campo.name !== "telefono"}
+                  className="form-control"
+                  value={form[campo.name]}
+                  onChange={handleChange}
+                  placeholder={
+                    campo.name === "password"
+                      ? "Contraseña"
+                      : campo.name.charAt(0).toUpperCase() + campo.name.slice(1)
+                  }
+                />
+              </div>
+            ))}
+            <div className="col-md-12">
+              <button className="btn btn-success">Crear Empresa</button>
+            </div>
+          </form>
 
-      <h4>Empresas</h4>
-      <table className="table">
-        <thead>
-          <tr><th>Nombre</th><th>RUT</th><th>Comuna</th><th>Teléfono</th><th>Email</th><th>Acciones</th></tr>
-        </thead>
-        <tbody>
-          {empresas.map((e) => (
-            <tr key={e.id}>
-              <td>{e.nombre}</td><td>{e.rut}</td><td>{e.comuna}</td><td>{e.telefono}</td><td>{e.email}</td>
-              <td>
-                <button className="btn btn-warning btn-sm me-2" onClick={() => handleEditar(e)}>Editar</button>
-                <button className="btn btn-danger btn-sm" onClick={() => handleEliminar(e.id)}>Eliminar</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          <h4>Empresas Registradas</h4>
+          <table className="table table-bordered bg-white">
+            <thead>
+              <tr><th>Nombre</th><th>Email</th><th>Comuna</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+              {empresas.map(e => (
+                <tr key={e.id}>
+                  <td>{e.nombre}</td>
+                  <td>{e.email}</td>
+                  <td>{e.comuna}</td>
+                  <td>
+                    <button className="btn btn-danger btn-sm" onClick={() => handleEliminar(e.id)}>
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

@@ -2,17 +2,16 @@ import { useEffect, useState } from "react";
 import { getDocs, deleteDoc, doc, collection } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import Swal from "sweetalert2";
+import "../../styles/adminBackground.css";
 
 export default function AdminClientes() {
   const [clientes, setClientes] = useState([]);
 
   const cargarClientes = async () => {
     const snapshot = await getDocs(collection(db, "usuarios"));
-    const filtrados = [];
-    snapshot.forEach(d => {
-      const data = d.data();
-      if (data.tipo === "cliente") filtrados.push({ id: d.id, ...data });
-    });
+    const filtrados = snapshot.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(d => d.tipo === "cliente");
     setClientes(filtrados);
   };
 
@@ -32,21 +31,28 @@ export default function AdminClientes() {
   useEffect(() => { cargarClientes(); }, []);
 
   return (
-    <div>
-      <h3>Clientes Registrados</h3>
-      <table className="table">
-        <thead>
-          <tr><th>Nombre</th><th>Email</th><th>Comuna</th><th>Teléfono</th><th>Acciones</th></tr>
-        </thead>
-        <tbody>
-          {clientes.map(c => (
-            <tr key={c.id}>
-              <td>{c.nombre}</td><td>{c.email}</td><td>{c.comuna}</td><td>{c.telefono || "-"}</td>
-              <td><button className="btn btn-danger btn-sm" onClick={() => eliminarCliente(c.id)}>Eliminar</button></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="admin-background">
+      <div className="admin-overlay">
+        <div className="admin-card">
+          <h3>Clientes Registrados</h3>
+          <table className="table table-bordered bg-white">
+            <thead>
+              <tr><th>Nombre</th><th>Email</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+              {clientes.map(c => (
+                <tr key={c.id}>
+                  <td>{c.nombre}</td>
+                  <td>{c.email}</td>
+                  <td>
+                    <button className="btn btn-danger btn-sm" onClick={() => eliminarCliente(c.id)}>Eliminar</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
