@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import DashboardEmpresa from "../pages/empresa/DashboardEmpresa";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Register from "./pages/Register"; 
@@ -9,6 +10,7 @@ export default function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/empresa/dashboard" element={<DashboardEmpresa />} />
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Register />} /> {}

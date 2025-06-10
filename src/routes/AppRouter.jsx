@@ -21,6 +21,10 @@ import AdminEmpresas from "../pages/admin/AdminEmpresas";
 import AdminAdministradores from "../pages/admin/AdminAdministradores";
 import AdminProductos from "../pages/admin/AdminProductos";
 
+// Empresa
+import PerfilEmpresa from "../pages/empresa/PerfilEmpresa";
+import ProductosEmpresa from "../pages/empresa/ProductosEmpresa";
+
 export default function AppRouter() {
   return (
     <Routes>
@@ -55,6 +59,21 @@ export default function AppRouter() {
         <Route path="administradores" element={<AdminAdministradores />} />
         <Route path="empresas/productos/:id" element={<AdminProductos />} />
       </Route>
+
+      {/* Empresa */}
+      <Route path="/empresa/perfil" element={
+        <ProtectedByRole allowed={["empresa"]}>
+          <PerfilEmpresa />
+        </ProtectedByRole>
+      } />
+      <Route path="/empresa/productos" element={
+        <ProtectedByRole allowed={["empresa"]}>
+          <ProductosEmpresa />
+        </ProtectedByRole>
+      } />
+
+      {/* Fallback para rutas no encontradas */}
+      <Route path="*" element={<h2>Página no encontrada</h2>} />
     </Routes>
   );
 }

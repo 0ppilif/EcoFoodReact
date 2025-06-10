@@ -1,0 +1,39 @@
+.empresa-navbar {
+  background-color: #4CAF50;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.empresa-navbar h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.empresa-navbar nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.empresa-navbar button,
+.empresa-navbar a {
+  background-color: white;
+  color: #4CAF50;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.empresa-navbar button:hover,
+.empresa-navbar a:hover {
+  background-color: #e8f5e9;
+}

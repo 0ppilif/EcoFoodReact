@@ -1,0 +1,76 @@
+.empresa-background {
+  background-image: url("/index.jpg"); 
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+}
+
+.empresa-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  min-height: 100vh;
+  padding-top: 6rem;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+}
+
+.empresa-card {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  max-width: 1200px;
+  width: 95%;
+  text-align: left;
+  overflow-x: auto;
+}
+
+.max-width-td {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .empresa-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .empresa-card h2 {
+    font-size: 1.5rem;
+  }
+}
+.text-limit {
+  max-width: 150px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.table td, .table th {
+  vertical-align: middle;
+  word-break: break-word;
+}
+
+input.form-control {
+  max-width: 300px;
+}
+
+button {
+  white-space: nowrap;
+}
+.productos-scroll {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.max-width-td {
+  max-width: 200px;
+}
