@@ -147,7 +147,7 @@ export default function AdminAdministradores() {
             </div>
           </form>
 
-          {/* Scrollable Table Container */}
+
           <div style={{ maxHeight: "300px", overflowY: "auto" }}>
             <table className="table table-bordered bg-white">
               <thead className="sticky-top bg-light">
@@ -196,7 +196,7 @@ export default function AdminAdministradores() {
         </div>
       </div>
 
-      {/* Modal de edición */}
+
       {showModal && editForm && (
         <div className="modal d-block" tabIndex="-1" style={{ background: "#00000080" }}>
           <div className="modal-dialog modal-lg">

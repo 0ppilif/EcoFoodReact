@@ -89,7 +89,7 @@ export default function AdminClientes() {
       if (error.code === "auth/email-already-in-use") {
         Swal.fire(
           "Error",
-          "El correo ya está registrado como cliente o administrador",
+          "El correo ya está registrado",
           "error"
         );
       } else {
@@ -150,7 +150,7 @@ export default function AdminClientes() {
               { name: "nombre", type: "text", max: 50 },
               { name: "direccion", type: "text", max: 100 },
               { name: "comuna", type: "select" },
-              { name: "telefono", type: "text", max: 15 },
+              { name: "telefono", type: "number", max: 15 },
               { name: "email", type: "email", max: 100 },
               { name: "password", type: "password", max: 20 },
             ].map((campo, i) => (
@@ -285,6 +285,7 @@ export default function AdminClientes() {
                   <label className="form-label">Teléfono</label>
                   <input
                     name="telefono"
+                    type="number"
                     className="form-control"
                     value={editForm.telefono}
                     onChange={handleEditChange}

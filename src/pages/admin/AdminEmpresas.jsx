@@ -128,7 +128,7 @@ export default function AdminEmpresas() {
               { name: "direccion", type: "text", max: 100 },
               { name: "comuna", type: "select" },
               { name: "email", type: "email", max: 100 },
-              { name: "telefono", type: "text", max: 15 },
+              { name: "telefono", type: "number", max: 15 },
               { name: "password", type: "password", max: 20 }
             ].map((campo, i) => (
               <div className="col-md-6" key={i}>
