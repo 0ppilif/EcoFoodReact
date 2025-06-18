@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; 
+import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { db } from "../../services/firebase";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
@@ -10,6 +10,8 @@ const ProductoModal = ({ producto, empresaId, onClose }) => {
   const [cantidad, setCantidad] = useState("");
   const [precio, setPrecio] = useState("");
   const [visible, setVisible] = useState(true);
+  const [enviando, setEnviando] = useState(false);
+
   const hoy = new Date();
   const fechaMinima = hoy.toISOString().split("T")[0];
   const fechaMaxima = "2030-12-31";
@@ -68,7 +70,10 @@ const ProductoModal = ({ producto, empresaId, onClose }) => {
   const manejarEnvio = async (e) => {
     e.preventDefault();
 
+    if (enviando) return;
     if (!validarCampos()) return;
+
+    setEnviando(true);
 
     const fechaVencimiento = new Date(vencimiento);
     const estado =
@@ -100,6 +105,8 @@ const ProductoModal = ({ producto, empresaId, onClose }) => {
     } catch (error) {
       console.error(error);
       Swal.fire("Error", "Hubo un problema al guardar el producto", "error");
+    } finally {
+      setEnviando(false);
     }
   };
 
@@ -185,10 +192,25 @@ const ProductoModal = ({ producto, empresaId, onClose }) => {
               </div>
             </div>
             <div className="modal-footer">
-              <button type="submit" className="btn btn-primary">
-                {producto ? "Actualizar" : "Crear"}
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={enviando}
+              >
+                {enviando
+                  ? producto
+                    ? "Actualizando..."
+                    : "Creando..."
+                  : producto
+                  ? "Actualizar"
+                  : "Crear"}
               </button>
-              <button type="button" className="btn btn-secondary" onClick={onClose}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={onClose}
+                disabled={enviando}
+              >
                 Cancelar
               </button>
             </div>

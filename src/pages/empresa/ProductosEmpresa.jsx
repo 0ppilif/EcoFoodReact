@@ -20,6 +20,7 @@ const ProductosEmpresa = () => {
   const [mostrarModal, setMostrarModal] = useState(false);
   const [productoActual, setProductoActual] = useState(null);
   const [empresaNombre, setEmpresaNombre] = useState("");
+  const [empresaId, setEmpresaId] = useState("");
   const [filtro, setFiltro] = useState("");
   const [ordenAZ, setOrdenAZ] = useState("az");
   const [soloDisponibles, setSoloDisponibles] = useState(false);
@@ -30,10 +31,10 @@ const ProductosEmpresa = () => {
   const user = auth.currentUser;
 
   const obtenerProductos = async () => {
-    if (!user || !empresaNombre) return;
+    if (!user || !empresaId) return;
     const q = query(
       collection(db, "producto"),
-      where("empresaId", "==", empresaNombre)
+      where("empresaId", "==", empresaId)
     );
     const querySnapshot = await getDocs(q);
     const productosData = querySnapshot.docs.map((doc) => ({
@@ -43,21 +44,24 @@ const ProductosEmpresa = () => {
     setProductos(productosData);
   };
 
-  const obtenerNombreEmpresa = async () => {
-    const querySnapshot = await getDocs(
+  const obtenerDatosEmpresa = async () => {
+    if (!user) return;
+    setEmpresaId(user.uid);
+
+    const snapshot = await getDocs(
       query(collection(db, "usuarios"), where("email", "==", user.email))
     );
-    const data = querySnapshot.docs[0]?.data();
-    if (data) setEmpresaNombre(data.nombre);
+    const data = snapshot.docs[0]?.data();
+    if (data?.nombre) setEmpresaNombre(data.nombre);
   };
 
   useEffect(() => {
-    if (user) obtenerNombreEmpresa();
+    if (user) obtenerDatosEmpresa();
   }, [user]);
 
   useEffect(() => {
-    if (empresaNombre) obtenerProductos();
-  }, [empresaNombre]);
+    if (empresaId) obtenerProductos();
+  }, [empresaId]);
 
   const eliminarProducto = async (id) => {
     const confirm = await Swal.fire({
@@ -199,7 +203,7 @@ const ProductosEmpresa = () => {
             </div>
 
             <button className="btn btn-secondary" onClick={resetFiltros}>
-              Quitar Fitros
+              Quitar Filtros
             </button>
           </div>
 
@@ -297,7 +301,7 @@ const ProductosEmpresa = () => {
           {mostrarModal && (
             <ProductoModal
               producto={productoActual}
-              empresaId={empresaNombre}
+              empresaId={empresaId}
               onClose={cerrarModal}
             />
           )}
