@@ -6,6 +6,17 @@ import EmpresaNavbar from "../../components/empresa/EmpresaNavbar";
 import "../../styles/empresadashboard.css";
 import Swal from "sweetalert2";
 
+const regiones = [
+  {
+    nombre: "Región de Coquimbo",
+    comunas: ["La Serena", "Coquimbo", "Vicuña", "Ovalle"],
+  },
+  {
+    nombre: "Región Metropolitana",
+    comunas: ["Santiago", "Puente Alto", "Maipú", "Las Condes"],
+  },
+];
+
 const PerfilEmpresa = () => {
   const auth = getAuth();
   const [empresa, setEmpresa] = useState(null);
@@ -66,7 +77,12 @@ const PerfilEmpresa = () => {
           <div className="mb-3">
             <strong>Nombre:</strong>{" "}
             {editando ? (
-              <input className="form-control" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+              <input
+                className="form-control"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                maxLength={100}
+              />
             ) : (
               empresa.nombre
             )}
@@ -80,7 +96,12 @@ const PerfilEmpresa = () => {
           <div className="mb-3">
             <strong>Dirección:</strong>{" "}
             {editando ? (
-              <input className="form-control" value={direccion} onChange={(e) => setDireccion(e.target.value)} />
+              <input
+                className="form-control"
+                value={direccion}
+                onChange={(e) => setDireccion(e.target.value)}
+                maxLength={100}
+              />
             ) : (
               empresa.direccion || "-"
             )}
@@ -88,7 +109,22 @@ const PerfilEmpresa = () => {
           <div className="mb-3">
             <strong>Comuna:</strong>{" "}
             {editando ? (
-              <input className="form-control" value={comuna} onChange={(e) => setComuna(e.target.value)} />
+              <select
+                className="form-select"
+                value={comuna}
+                onChange={(e) => setComuna(e.target.value)}
+              >
+                <option value="">Selecciona una comuna</option>
+                {regiones.map((region, i) => (
+                  <optgroup key={i} label={region.nombre}>
+                    {region.comunas.map((comunaNombre, j) => (
+                      <option key={j} value={comunaNombre}>
+                        {comunaNombre}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
             ) : (
               empresa.comuna || "-"
             )}

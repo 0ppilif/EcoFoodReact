@@ -9,8 +9,7 @@ const ProductoModal = ({ producto, empresaId, onClose }) => {
   const [vencimiento, setVencimiento] = useState("");
   const [cantidad, setCantidad] = useState("");
   const [precio, setPrecio] = useState("");
-
-  // 🗓️ Obtener fecha actual en formato YYYY-MM-DD
+  const [visible, setVisible] = useState(true);
   const hoy = new Date();
   const fechaMinima = hoy.toISOString().split("T")[0];
   const fechaMaxima = "2030-12-31";
@@ -22,6 +21,7 @@ const ProductoModal = ({ producto, empresaId, onClose }) => {
       setVencimiento(producto.vencimiento);
       setCantidad(producto.cantidad);
       setPrecio(producto.precio);
+      setVisible(producto.visible ?? true);
     }
   }, [producto]);
 
@@ -83,6 +83,7 @@ const ProductoModal = ({ producto, empresaId, onClose }) => {
       cantidad: parseInt(cantidad),
       precio: parseFloat(precio),
       estado,
+      visible,
       empresaId,
     };
 
@@ -169,6 +170,18 @@ const ProductoModal = ({ producto, empresaId, onClose }) => {
                   step="0.01"
                   required
                 />
+              </div>
+              <div className="form-check mt-3">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={visible}
+                  onChange={(e) => setVisible(e.target.checked)}
+                  id="visibleCheck"
+                />
+                <label className="form-check-label" htmlFor="visibleCheck">
+                  ¿Visible para clientes?
+                </label>
               </div>
             </div>
             <div className="modal-footer">
