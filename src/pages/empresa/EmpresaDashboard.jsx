@@ -1,38 +1,42 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthProvider";
-import EmpresaNavbar from "../../components/empresa/EmpresaNavbar";
 
-const EmpresaDashboard = () => {
-  const { user } = useAuth();
+export default function EmpresaNavbar() {
   const navigate = useNavigate();
 
-  const irA = (ruta) => navigate(ruta);
+  const cerrarSesion = () => {
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
   return (
-    <>
-      <EmpresaNavbar />
-      <div className="container text-center mt-5">
-        <h2 className="mb-4">
-          Bienvenido, {user?.nombre} ({user?.tipo})
-        </h2>
-        <div className="d-flex justify-content-center gap-4">
-          <button className="btn btn-outline-primary" onClick={() => irA("/empresa/perfil")}>
-            Perfil Empresarial
+    <nav className="navbar navbar-expand-lg navbar-dark bg-success">
+      <div className="container">
+        <span className="navbar-brand">EcoFood Empresa</span>
+        <div>
+          <button
+            className="btn btn-outline-light me-2"
+            onClick={() => navigate("/empresa/perfil")}
+          >
+            Perfil
           </button>
-          <button className="btn btn-outline-success" onClick={() => irA("/empresa/productos")}>
+          <button
+            className="btn btn-outline-light me-2"
+            onClick={() => navigate("/empresa/productos")}
+          >
             Productos
           </button>
-          <button className="btn btn-outline-danger" onClick={() => {
-            localStorage.removeItem("user");
-            navigate("/login");
-          }}>
+          <button
+            className="btn btn-outline-light me-2"
+            onClick={() => navigate("/empresa/solicitudes")}
+          >
+            Solicitudes
+          </button>
+          <button className="btn btn-danger" onClick={cerrarSesion}>
             Cerrar sesión
           </button>
         </div>
       </div>
-    </>
+    </nav>
   );
-};
-
-export default EmpresaDashboard;
+}

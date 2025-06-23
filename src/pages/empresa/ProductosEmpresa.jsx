@@ -48,8 +48,9 @@ const ProductosEmpresa = () => {
     if (!user) return;
     setEmpresaId(user.uid);
 
+    const ref = doc(db, "usuarios", user.uid);
     const snapshot = await getDocs(
-      query(collection(db, "usuarios"), where("email", "==", user.email))
+      query(collection(db, "usuarios"), where("uid", "==", user.uid))
     );
     const data = snapshot.docs[0]?.data();
     if (data?.nombre) setEmpresaNombre(data.nombre);

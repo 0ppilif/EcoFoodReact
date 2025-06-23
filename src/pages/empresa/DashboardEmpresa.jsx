@@ -23,6 +23,9 @@ const DashboardEmpresa = () => {
           <button className="btn btn-success" onClick={() => navigate('/empresa/productos')}>
             Productos
           </button>
+          <button className="btn btn-warning" onClick={() => navigate('/empresa/solicitudes')}>
+            Solicitudes
+          </button>
           <button className="btn btn-danger" onClick={handleLogout}>
             Cerrar Sesión
           </button>
