@@ -6,11 +6,14 @@ import Home from "../pages/Home";
 import ProtectedRoute from "./ProtectedRoute";
 import ProtectedByRole from "./ProtectedByRole";
 
+// Cliente
+import ClienteLayout from "../components/cliente/ClienteLayout";
 import ClienteDashboard from "../pages/cliente/ClienteDashboard";
 import VerProductos from "../pages/cliente/VerProductos";
 import MisPedidos from "../pages/cliente/MisPedidos";
 import EditarPerfil from "../pages/cliente/EditarPerfil";
 
+// Admin
 import AdminLayout from "../components/admin/layout/AdminLayout";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminClientes from "../pages/admin/AdminClientes";
@@ -18,19 +21,22 @@ import AdminEmpresas from "../pages/admin/AdminEmpresas";
 import AdminAdministradores from "../pages/admin/AdminAdministradores";
 import AdminProductos from "../pages/admin/AdminProductos";
 
+// Empresa
 import DashboardEmpresa from "../pages/empresa/DashboardEmpresa";
 import PerfilEmpresa from "../pages/empresa/PerfilEmpresa";
 import ProductosEmpresa from "../pages/empresa/ProductosEmpresa";
-import SolicitudesEmpresa from "../pages/empresa/SolicitudesEmpresa"; // NUEVA
+import SolicitudesEmpresa from "../pages/empresa/SolicitudesEmpresa";
 
 export default function AppRouter() {
   return (
     <Routes>
+      {/* Públicas */}
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
       <Route path="/registro" element={<Register />} />
       <Route path="/recuperar" element={<RecuperarContraseña />} />
 
+      {/* Protegida general */}
       <Route
         path="/home"
         element={
@@ -42,37 +48,18 @@ export default function AppRouter() {
 
       {/* Cliente */}
       <Route
-        path="/cliente/dashboard"
+        path="/cliente"
         element={
           <ProtectedByRole allowed={["cliente"]}>
-            <ClienteDashboard />
+            <ClienteLayout />
           </ProtectedByRole>
         }
-      />
-      <Route
-        path="/cliente/productos"
-        element={
-          <ProtectedByRole allowed={["cliente"]}>
-            <VerProductos />
-          </ProtectedByRole>
-        }
-      />
-      <Route
-        path="/cliente/pedidos"
-        element={
-          <ProtectedByRole allowed={["cliente"]}>
-            <MisPedidos />
-          </ProtectedByRole>
-        }
-      />
-      <Route
-        path="/cliente/perfil"
-        element={
-          <ProtectedByRole allowed={["cliente"]}>
-            <EditarPerfil />
-          </ProtectedByRole>
-        }
-      />
+      >
+        <Route path="dashboard" element={<ClienteDashboard />} />
+        <Route path="productos" element={<VerProductos />} />
+        <Route path="pedidos" element={<MisPedidos />} />
+        <Route path="perfil" element={<EditarPerfil />} />
+      </Route>
 
       {/* Admin */}
       <Route
@@ -124,6 +111,7 @@ export default function AppRouter() {
         }
       />
 
+      {/* Página no encontrada */}
       <Route path="*" element={<h2>Página no encontrada</h2>} />
     </Routes>
   );

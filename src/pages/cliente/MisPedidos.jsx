@@ -52,15 +52,15 @@ export default function MisPedidos() {
   }, [user]);
 
   return (
-    <div className="container mt-5">
-      <div className="card p-4 shadow">
-        <h2 className="mb-4">Mis Solicitudes</h2>
+    <div className="container mt-4">
+      <div className="row mb-4">
+        <h2 className="mb-4 text-center">Mis Solicitudes</h2>
         {pedidos.length === 0 ? (
-          <p>No tienes solicitudes registradas.</p>
+          <p className="text-center">No tienes solicitudes registradas.</p>
         ) : (
-          <div className="table-responsive">
+          <div className="table-responsive" style={{ maxHeight: "60vh", overflowY: "auto" }}>
             <table className="table table-bordered align-middle">
-              <thead className="table-success">
+              <thead className="table-success sticky-top">
                 <tr>
                   <th>Producto</th>
                   <th>Empresa</th>

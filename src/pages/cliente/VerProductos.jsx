@@ -106,7 +106,7 @@ export default function VerProductos() {
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4">Productos Disponibles</h2>
+      <h2 className="mb-4 text-center">Productos Disponibles</h2>
 
       <div className="row mb-3">
         <div className="col-md-3">
@@ -138,54 +138,56 @@ export default function VerProductos() {
         <div className="col-md-3">
           <label className="form-label">Ordenar por:</label>
           <select className="form-select" value={orden} onChange={(e) => setOrden(e.target.value)}>
-            <option value="">Sin orden</option>
             <option value="nombre">Nombre</option>
             <option value="precio">Precio</option>
           </select>
         </div>
       </div>
 
-      <table className="table table-bordered table-hover">
-        <thead className="table-light">
-          <tr>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Empresa</th>
-            <th>Comuna</th>
-            <th>Precio</th>
-            <th>Vencimiento</th>
-            <th>Stock</th>
-            <th>Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          {aplicarFiltrosYOrden().length === 0 ? (
+      {/* Contenedor con scroll y responsivo */}
+      <div className="table-responsive" style={{ maxHeight: "60vh", overflowY: "auto" }}>
+        <table className="table table-bordered table-hover">
+          <thead className="table-light">
             <tr>
-              <td colSpan="8" className="text-center">No hay productos disponibles</td>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Empresa</th>
+              <th>Comuna</th>
+              <th>Precio</th>
+              <th>Vencimiento</th>
+              <th>Stock</th>
+              <th>Acción</th>
             </tr>
-          ) : (
-            aplicarFiltrosYOrden().map((producto) => (
-              <tr key={producto.id}>
-                <td>{producto.nombre}</td>
-                <td>{producto.descripcion}</td>
-                <td>{producto.empresaNombre}</td>
-                <td>{producto.empresaComuna}</td>
-                <td>{producto.precio === 0 ? "Gratuito" : `$${producto.precio}`}</td>
-                <td>{producto.vencimiento}</td>
-                <td>{producto.cantidad}</td>
-                <td>
-                  <button
-                    className="btn btn-sm btn-success"
-                    onClick={() => manejarSolicitud(producto)}
-                  >
-                    Solicitar
-                  </button>
-                </td>
+          </thead>
+          <tbody>
+            {aplicarFiltrosYOrden().length === 0 ? (
+              <tr>
+                <td colSpan="8" className="text-center">No hay productos disponibles</td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ) : (
+              aplicarFiltrosYOrden().map((producto) => (
+                <tr key={producto.id}>
+                  <td>{producto.nombre}</td>
+                  <td>{producto.descripcion}</td>
+                  <td>{producto.empresaNombre}</td>
+                  <td>{producto.empresaComuna}</td>
+                  <td>{producto.precio === 0 ? "Gratuito" : `$${producto.precio}`}</td>
+                  <td>{producto.vencimiento}</td>
+                  <td>{producto.cantidad}</td>
+                  <td>
+                    <button
+                      className="btn btn-sm btn-success"
+                      onClick={() => manejarSolicitud(producto)}
+                    >
+                      Solicitar
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

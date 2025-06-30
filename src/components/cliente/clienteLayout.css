@@ -1,0 +1,17 @@
+.fondo-cliente {
+  background-image: url('/public/index.jpg');
+  height: 120vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+}
+
+.contenedor-blanco {
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  padding: 2rem;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}

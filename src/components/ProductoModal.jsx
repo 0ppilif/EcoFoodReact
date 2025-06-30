@@ -37,6 +37,7 @@ const ProductoModal = ({ isOpen, onClose, producto, onGuardar }) => {
                 name={campo}
                 value={form[campo]}
                 onChange={handleChange}
+                required
               />
             </Form.Group>
           ))}

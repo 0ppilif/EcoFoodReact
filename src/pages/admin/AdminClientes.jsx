@@ -257,7 +257,7 @@ export default function AdminClientes() {
                 <div className="col-md-6">
                   <label className="form-label">Nombre</label>
                   <input
-                    name="nombre"
+                    name="nombre" 
                     className="form-control"
                     value={editForm.nombre}
                     onChange={handleEditChange}
