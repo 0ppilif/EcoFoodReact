@@ -3,7 +3,7 @@ import { getAuth } from "firebase/auth";
 import { collection, query, where, getDocs, doc, getDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import Swal from "sweetalert2";
-import "../../styles/empresadashboard.css";
+import "../../styles/empresaDashboard.css";
 
 export default function MisPedidos() {
   const [pedidos, setPedidos] = useState([]);
