@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import Swal from "sweetalert2";
+import "../../styles/empresadashboard.css";
 
 export default function VerProductos() {
   const [productos, setProductos] = useState([]);
@@ -105,86 +106,94 @@ export default function VerProductos() {
   const comunasUnicas = [...new Set(productos.map((p) => p.empresaComuna))];
 
   return (
-    <div className="container mt-4">
-      <h2 className="mb-4 text-center">Productos Disponibles</h2>
+    <div className="empresa-background">
+      <div className="empresa-overlay">
+        <div className="empresa-card">
+          <h2 className="mb-4 text-center">Productos Disponibles</h2>
 
-      <div className="row mb-3">
-        <div className="col-md-3">
-          <label className="form-label">Filtrar por empresa:</label>
-          <select className="form-select" value={filtroEmpresa} onChange={(e) => setFiltroEmpresa(e.target.value)}>
-            <option value="">Todas</option>
-            {empresasUnicas.map((empresa, i) => (
-              <option key={i} value={empresa}>{empresa}</option>
-            ))}
-          </select>
-        </div>
-        <div className="col-md-3">
-          <label className="form-label">Filtrar por comuna:</label>
-          <select className="form-select" value={filtroComuna} onChange={(e) => setFiltroComuna(e.target.value)}>
-            <option value="">Todas</option>
-            {comunasUnicas.map((comuna, i) => (
-              <option key={i} value={comuna}>{comuna}</option>
-            ))}
-          </select>
-        </div>
-        <div className="col-md-3">
-          <label className="form-label">Tipo de producto:</label>
-          <select className="form-select" value={filtroPrecio} onChange={(e) => setFiltroPrecio(e.target.value)}>
-            <option value="">Todos</option>
-            <option value="gratuito">Gratuitos</option>
-            <option value="pago">Con precio</option>
-          </select>
-        </div>
-        <div className="col-md-3">
-          <label className="form-label">Ordenar por:</label>
-          <select className="form-select" value={orden} onChange={(e) => setOrden(e.target.value)}>
-            <option value="nombre">Nombre</option>
-            <option value="precio">Precio</option>
-          </select>
-        </div>
-      </div>
-      <div className="table-responsive" style={{ maxHeight: "60vh", overflowY: "auto" }}>
-        <table className="table table-bordered table-hover">
-          <thead className="table-light">
-            <tr>
-              <th>Nombre</th>
-              <th>Descripción</th>
-              <th>Empresa</th>
-              <th>Comuna</th>
-              <th>Precio</th>
-              <th>Vencimiento</th>
-              <th>Stock</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            {aplicarFiltrosYOrden().length === 0 ? (
-              <tr>
-                <td colSpan="8" className="text-center">No hay productos disponibles</td>
-              </tr>
-            ) : (
-              aplicarFiltrosYOrden().map((producto) => (
-                <tr key={producto.id}>
-                  <td>{producto.nombre}</td>
-                  <td>{producto.descripcion}</td>
-                  <td>{producto.empresaNombre}</td>
-                  <td>{producto.empresaComuna}</td>
-                  <td>{producto.precio === 0 ? "Gratuito" : `$${producto.precio}`}</td>
-                  <td>{producto.vencimiento}</td>
-                  <td>{producto.cantidad}</td>
-                  <td>
-                    <button
-                      className="btn btn-sm btn-success"
-                      onClick={() => manejarSolicitud(producto)}
-                    >
-                      Solicitar
-                    </button>
-                  </td>
+          {/* Filtros */}
+          <div className="row mb-3">
+            <div className="col-md-3">
+              <label className="form-label">Empresa:</label>
+              <select className="form-select" value={filtroEmpresa} onChange={(e) => setFiltroEmpresa(e.target.value)}>
+                <option value="">Todas</option>
+                {empresasUnicas.map((empresa, i) => (
+                  <option key={i} value={empresa}>{empresa}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-3">
+              <label className="form-label">Comuna:</label>
+              <select className="form-select" value={filtroComuna} onChange={(e) => setFiltroComuna(e.target.value)}>
+                <option value="">Todas</option>
+                {comunasUnicas.map((comuna, i) => (
+                  <option key={i} value={comuna}>{comuna}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-3">
+              <label className="form-label">Tipo:</label>
+              <select className="form-select" value={filtroPrecio} onChange={(e) => setFiltroPrecio(e.target.value)}>
+                <option value="">Todos</option>
+                <option value="gratuito">Gratuitos</option>
+                <option value="pago">Con precio</option>
+              </select>
+            </div>
+            <div className="col-md-3">
+              <label className="form-label">Ordenar por:</label>
+              <select className="form-select" value={orden} onChange={(e) => setOrden(e.target.value)}>
+                <option value="">Sin orden</option>
+                <option value="nombre">Nombre</option>
+                <option value="precio">Precio</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Tabla de productos */}
+          <div className="productos-scroll table-responsive">
+            <table className="table table-bordered align-middle text-center">
+              <thead className="table-light">
+                <tr>
+                  <th>Nombre</th>
+                  <th>Descripción</th>
+                  <th>Empresa</th>
+                  <th>Comuna</th>
+                  <th>Precio</th>
+                  <th>Vencimiento</th>
+                  <th>Stock</th>
+                  <th>Acción</th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                {aplicarFiltrosYOrden().length === 0 ? (
+                  <tr>
+                    <td colSpan="8" className="text-center">No hay productos disponibles</td>
+                  </tr>
+                ) : (
+                  aplicarFiltrosYOrden().map((producto) => (
+                    <tr key={producto.id}>
+                      <td className="text-truncate max-width-td" title={producto.nombre}>{producto.nombre}</td>
+                      <td className="text-truncate max-width-td" title={producto.descripcion}>{producto.descripcion}</td>
+                      <td>{producto.empresaNombre}</td>
+                      <td>{producto.empresaComuna}</td>
+                      <td>{producto.precio === 0 ? "Gratuito" : `$${producto.precio}`}</td>
+                      <td>{producto.vencimiento}</td>
+                      <td>{producto.cantidad}</td>
+                      <td>
+                        <button
+                          className="btn btn-sm btn-success"
+                          onClick={() => manejarSolicitud(producto)}
+                        >
+                          Solicitar
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   );

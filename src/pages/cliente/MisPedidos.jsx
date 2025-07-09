@@ -3,6 +3,7 @@ import { getAuth } from "firebase/auth";
 import { collection, query, where, getDocs, doc, getDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import Swal from "sweetalert2";
+import "../../styles/empresadashboard.css";
 
 export default function MisPedidos() {
   const [pedidos, setPedidos] = useState([]);
@@ -52,48 +53,51 @@ export default function MisPedidos() {
   }, [user]);
 
   return (
-    <div className="container mt-4">
-      <div className="row mb-4">
-        <h2 className="mb-4 text-center">Mis Solicitudes</h2>
-        {pedidos.length === 0 ? (
-          <p className="text-center">No tienes solicitudes registradas.</p>
-        ) : (
-          <div className="table-responsive" style={{ maxHeight: "60vh", overflowY: "auto" }}>
-            <table className="table table-bordered align-middle">
-              <thead className="table-success sticky-top">
-                <tr>
-                  <th>Producto</th>
-                  <th>Empresa</th>
-                  <th>Cantidad</th>
-                  <th>Fecha</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pedidos.map((pedido) => (
-                  <tr key={pedido.id}>
-                    <td>{pedido.nombreProducto}</td>
-                    <td>{pedido.nombreEmpresa}</td>
-                    <td>{pedido.cantidadSolicitada}</td>
-                    <td>{pedido.fecha}</td>
-                    <td>{pedido.estado}</td>
-                    <td>
-                      {pedido.estado === "pendiente" && (
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => cancelarPedido(pedido.id)}
-                        >
-                          Cancelar
-                        </button>
-                      )}
-                    </td>
+    <div className="empresa-background">
+      <div className="empresa-overlay">
+        <div className="empresa-card">
+          <h2 className="mb-4 text-center">Mis Solicitudes</h2>
+
+          {pedidos.length === 0 ? (
+            <p className="text-center">No tienes solicitudes registradas.</p>
+          ) : (
+            <div className="productos-scroll table-responsive">
+              <table className="table table-bordered align-middle text-center">
+                <thead className="table-light sticky-top">
+                  <tr>
+                    <th>Producto</th>
+                    <th>Empresa</th>
+                    <th>Cantidad</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {pedidos.map((pedido) => (
+                    <tr key={pedido.id}>
+                      <td>{pedido.nombreProducto}</td>
+                      <td>{pedido.nombreEmpresa}</td>
+                      <td>{pedido.cantidadSolicitada}</td>
+                      <td>{pedido.fecha}</td>
+                      <td>{pedido.estado}</td>
+                      <td>
+                        {pedido.estado === "pendiente" && (
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={() => cancelarPedido(pedido.id)}
+                          >
+                            Cancelar
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

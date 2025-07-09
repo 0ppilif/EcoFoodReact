@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getAuth } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
+import "../../styles/empresadashboard.css";
 
 export default function ClienteDashboard() {
   const auth = getAuth();
@@ -23,16 +24,15 @@ export default function ClienteDashboard() {
   }, [user]);
 
   return (
-    <div
-      className="cliente-dashboard"
-
-    >
-      <div className="overlay">
-        <div className="welcome-card">
+    <div className="empresa-background">
+      <div className="empresa-overlay">
+        <div className="empresa-card text-center">
           <h2 className="mb-4">Bienvenido, {nombreCliente}</h2>
-          <p>Puedes ver y pedir los productos que necesites</p>
+          <p className="fs-5">
+            Puedes ver y pedir los productos que necesites desde el menú lateral.
+          </p>
         </div>
       </div>
-      </div>
+    </div>
   );
 }
