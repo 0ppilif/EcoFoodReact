@@ -65,7 +65,7 @@ export default function AdminLayout() {
       await setDoc(ref, { nombre, email, tipo: "admin" });
 
       const datosActualizados = await getUserData(auth.currentUser.uid);
-      setUserData(datosActualizados); // ✅ Refresca el nombre mostrado
+      setUserData(datosActualizados);
 
       Swal.fire("Actualizado", "Perfil actualizado correctamente", "success");
       setShowModal(false);

@@ -1,9 +1,8 @@
-// src/services/userService.js
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "./firebase";
 /**
-* Obtiene los datos del usuario desde Firestore
-* @param {string} uid - ID del usuario (auth.uid)
+* Obtiene los datos del usuario desde firestore
+* @param {string} uid 
 */
 export const getUserData = async (uid) => {
 try {
@@ -22,7 +21,7 @@ throw error;
 /**
 * Guarda los datos del usuario al momento de registrarse
 * @param {string} uid
-* @param {object} data - {nombre, tipo, email}
+* @param {object} data 
 */
 export const saveUserData = async (uid, data) => {
 try {

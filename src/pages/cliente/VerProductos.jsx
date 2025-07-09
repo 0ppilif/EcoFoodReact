@@ -143,8 +143,6 @@ export default function VerProductos() {
           </select>
         </div>
       </div>
-
-      {/* Contenedor con scroll y responsivo */}
       <div className="table-responsive" style={{ maxHeight: "60vh", overflowY: "auto" }}>
         <table className="table table-bordered table-hover">
           <thead className="table-light">

@@ -1,156 +1,90 @@
 import React, { useEffect, useState } from "react";
-import { getAuth, updatePassword } from "firebase/auth";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { Outlet, useNavigate, Link } from "react-router-dom";
+import { getAuth, signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
+import { Dropdown } from "react-bootstrap";
+import { FaUserCircle } from "react-icons/fa";
 import Swal from "sweetalert2";
-import { useOutletContext } from "react-router-dom"; // 🔹 IMPORTANTE
 
-const regiones = [
-  {
-    nombre: "Región de Coquimbo",
-    comunas: ["La Serena", "Coquimbo", "Vicuña", "Ovalle"],
-  },
-  {
-    nombre: "Región Metropolitana",
-    comunas: ["Santiago", "Puente Alto", "Maipú", "Las Condes"],
-  },
-];
-
-export default function EditarPerfil() {
+export default function ClienteLayout() {
+  const [nombreCliente, setNombreCliente] = useState("");
   const auth = getAuth();
   const user = auth.currentUser;
-  const { actualizarNombreCliente } = useOutletContext(); // 🔹 Acceder desde el Layout
+  const navigate = useNavigate();
 
-  const [nombre, setNombre] = useState("");
-  const [direccion, setDireccion] = useState("");
-  const [comuna, setComuna] = useState("");
-  const [nuevaContrasena, setNuevaContrasena] = useState("");
+  const obtenerNombreCliente = async () => {
+    if (!user) return;
+    const ref = doc(db, "usuarios", user.uid);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      const data = snap.data();
+      setNombreCliente(data.nombre || user.email);
+    }
+  };
+
+  const cerrarSesion = async () => {
+    const confirmar = await Swal.fire({
+      title: "¿Cerrar sesión?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Sí",
+      cancelButtonText: "No",
+    });
+
+    if (confirmar.isConfirmed) {
+      await signOut(auth);
+      navigate("/login");
+    }
+  };
+
+  const nombreCorto = (nombre) => {
+    if (!nombre) return "";
+    return nombre.length > 15 ? nombre.split(" ")[0] : nombre;
+  };
 
   useEffect(() => {
-    const obtenerDatos = async () => {
-      const ref = doc(db, "usuarios", user.uid);
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        const data = snap.data();
-        setNombre(data.nombre || "");
-        setDireccion(data.direccion || "");
-        setComuna(data.comuna || "");
-      }
-    };
-    obtenerDatos();
+    obtenerNombreCliente();
   }, [user]);
 
-  const validarFormulario = () => {
-    if (nombre.length > 50) {
-      Swal.fire("Error", "El nombre no debe exceder los 50 caracteres", "error");
-      return false;
-    }
-    if (direccion.length > 50) {
-      Swal.fire("Error", "La dirección no debe exceder los 50 caracteres", "error");
-      return false;
-    }
-    if (
-      nuevaContrasena &&
-      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*[^\w\s]).{6,}$/.test(nuevaContrasena)
-    ) {
-      Swal.fire(
-        "Error",
-        "La contraseña debe tener al menos 6 caracteres, incluyendo mayúscula, minúscula y un símbolo",
-        "error"
-      );
-      return false;
-    }
-    return true;
-  };
-
-  const manejarEnvio = async (e) => {
-    e.preventDefault();
-    if (!validarFormulario()) return;
-
-    try {
-      const ref = doc(db, "usuarios", user.uid);
-      await updateDoc(ref, {
-        nombre,
-        direccion,
-        comuna,
-      });
-
-      if (nuevaContrasena) {
-        await updatePassword(user, nuevaContrasena);
-      }
-
-      // 🔄 Actualizar nombre en el layout inmediatamente
-      actualizarNombreCliente();
-
-      Swal.fire("Actualizado", "Tu perfil ha sido actualizado", "success");
-    } catch (error) {
-      Swal.fire("Error", "No se pudo actualizar tu perfil", "error");
-    }
-  };
-
-  const comunasDisponibles = regiones.flatMap((r) => r.comunas);
-
   return (
-    <div className="container mt-4">
-      <h2 className="mb-4">Editar Perfil</h2>
-      <form onSubmit={manejarEnvio}>
-        <div className="mb-3">
-          <label className="form-label">Correo Electrónico</label>
-          <input type="email" className="form-control" value={user.email} disabled />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Nombre</label>
-          <input
-            type="text"
-            className="form-control"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            maxLength={50}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Dirección</label>
-          <input
-            type="text"
-            className="form-control"
-            value={direccion}
-            onChange={(e) => setDireccion(e.target.value)}
-            maxLength={50}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Comuna</label>
-          <select
-            className="form-select"
-            value={comuna}
-            onChange={(e) => setComuna(e.target.value)}
-            required
-          >
-            <option value="">Selecciona una comuna</option>
-            {comunasDisponibles.map((c, i) => (
-              <option key={i} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Nueva Contraseña (opcional)</label>
-          <input
-            type="password"
-            className="form-control"
-            value={nuevaContrasena}
-            onChange={(e) => setNuevaContrasena(e.target.value)}
-          />
-        </div>
-        <div className="text-end">
-          <button type="submit" className="btn btn-success">
-            Guardar Cambios
-          </button>
-        </div>
-      </form>
+    <div className="d-flex min-vh-100">
+      {/* Sidebar */}
+      <div className="bg-success text-white p-3" style={{ width: "220px" }}>
+        <h4 className="fw-bold mb-4">ECOFOOD</h4>
+        <nav className="nav flex-column">
+          <Link to="/cliente/dashboard" className="nav-link text-white">
+            Inicio
+          </Link>
+          <Link to="/cliente/productos" className="nav-link text-white">
+            Productos
+          </Link>
+          <Link to="/cliente/pedidos" className="nav-link text-white">
+            Solicitudes
+          </Link>
+        </nav>
+      </div>
+
+      <div className="flex-grow-1 d-flex flex-column">
+        <header className="bg-light d-flex justify-content-between align-items-center px-4 py-2 border-bottom">
+          <span className="fw-bold fs-5 text-secondary">Bienvenido a EcoFood</span>
+          <Dropdown align="end">
+            <Dropdown.Toggle variant="light" className="d-flex align-items-center">
+              <span className="me-2">{nombreCorto(nombreCliente)}</span>
+              <FaUserCircle size={24} />
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Item as={Link} to="/cliente/perfil">Editar perfil</Dropdown.Item>
+              <Dropdown.Divider />
+              <Dropdown.Item onClick={cerrarSesion}>Cerrar sesión</Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+        </header>
+
+        <main className="p-4" style={{ flex: 1, overflowY: "auto" }}>
+          <Outlet context={{ actualizarNombreCliente: obtenerNombreCliente }} />
+        </main>
+      </div>
     </div>
   );
 }
