@@ -65,6 +65,7 @@ export default function EmpresaModal({ show, handleClose, empresa, onSave }) {
               name="direccion"
               value={formData.direccion}
               onChange={handleChange}
+              minLength={5}
               maxLength={100}
               required
             />
@@ -93,9 +94,10 @@ export default function EmpresaModal({ show, handleClose, empresa, onSave }) {
             <Form.Label>Teléfono</Form.Label>
             <Form.Control
               name="telefono"
-              type="number"
+              type="tel"
               value={formData.telefono}
               onChange={handleChange}
+              minLength={8}
               maxLength={15}
             />
           </Form.Group>

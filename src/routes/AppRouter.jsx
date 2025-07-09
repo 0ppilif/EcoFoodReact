@@ -22,6 +22,7 @@ import AdminAdministradores from "../pages/admin/AdminAdministradores";
 import AdminProductos from "../pages/admin/AdminProductos";
 
 // Empresa
+import EmpresaLayout from "../components/empresa/EmpresaLayout";
 import DashboardEmpresa from "../pages/empresa/DashboardEmpresa";
 import PerfilEmpresa from "../pages/empresa/PerfilEmpresa";
 import ProductosEmpresa from "../pages/empresa/ProductosEmpresa";
@@ -79,37 +80,18 @@ export default function AppRouter() {
 
       {/* Empresa */}
       <Route
-        path="/empresa/dashboard"
+        path="/empresa"
         element={
           <ProtectedByRole allowed={["empresa"]}>
-            <DashboardEmpresa />
+            <EmpresaLayout />
           </ProtectedByRole>
         }
-      />
-      <Route
-        path="/empresa/perfil"
-        element={
-          <ProtectedByRole allowed={["empresa"]}>
-            <PerfilEmpresa />
-          </ProtectedByRole>
-        }
-      />
-      <Route
-        path="/empresa/productos"
-        element={
-          <ProtectedByRole allowed={["empresa"]}>
-            <ProductosEmpresa />
-          </ProtectedByRole>
-        }
-      />
-      <Route
-        path="/empresa/solicitudes"
-        element={
-          <ProtectedByRole allowed={["empresa"]}>
-            <SolicitudesEmpresa />
-          </ProtectedByRole>
-        }
-      />
+      >
+        <Route path="dashboard" element={<DashboardEmpresa />} />
+        <Route path="perfil" element={<PerfilEmpresa />} />
+        <Route path="productos" element={<ProductosEmpresa />} />
+        <Route path="solicitudes" element={<SolicitudesEmpresa />} />
+      </Route>
 
       {/* Página no encontrada */}
       <Route path="*" element={<h2>Página no encontrada</h2>} />

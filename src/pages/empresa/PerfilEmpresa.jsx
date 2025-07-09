@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
-import EmpresaNavbar from "../../components/empresa/EmpresaNavbar";
 import "../../styles/empresadashboard.css";
 import Swal from "sweetalert2";
 
@@ -19,6 +19,8 @@ const regiones = [
 
 const PerfilEmpresa = () => {
   const auth = getAuth();
+  const location = useLocation();
+
   const [empresa, setEmpresa] = useState(null);
   const [editando, setEditando] = useState(false);
   const [nombre, setNombre] = useState("");
@@ -42,6 +44,13 @@ const PerfilEmpresa = () => {
     };
     obtenerDatosEmpresa();
   }, [auth]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("edit") === "true") {
+      setEditando(true);
+    }
+  }, [location]);
 
   const guardarCambios = async () => {
     try {
@@ -69,9 +78,8 @@ const PerfilEmpresa = () => {
 
   return (
     <div className="empresa-background">
-      <EmpresaNavbar nombre={empresa.nombre} />
       <div className="empresa-overlay">
-        <div className="bg-white rounded-4 p-4 shadow-lg" style={{ maxWidth: "600px", width: "100%" }}>
+        <div className="empresa-card">
           <h2 className="mb-4 text-center">Perfil de la Empresa</h2>
 
           <div className="mb-3">
@@ -81,7 +89,6 @@ const PerfilEmpresa = () => {
                 className="form-control"
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
-                maxLength={100}
               />
             ) : (
               empresa.nombre
@@ -100,7 +107,6 @@ const PerfilEmpresa = () => {
                 className="form-control"
                 value={direccion}
                 onChange={(e) => setDireccion(e.target.value)}
-                maxLength={100}
               />
             ) : (
               empresa.direccion || "-"
@@ -117,9 +123,9 @@ const PerfilEmpresa = () => {
                 <option value="">Selecciona una comuna</option>
                 {regiones.map((region, i) => (
                   <optgroup key={i} label={region.nombre}>
-                    {region.comunas.map((comunaNombre, j) => (
-                      <option key={j} value={comunaNombre}>
-                        {comunaNombre}
+                    {region.comunas.map((c, j) => (
+                      <option key={j} value={c}>
+                        {c}
                       </option>
                     ))}
                   </optgroup>
@@ -133,11 +139,17 @@ const PerfilEmpresa = () => {
           <div className="text-end">
             {editando ? (
               <>
-                <button className="btn btn-success me-2" onClick={guardarCambios}>Guardar</button>
-                <button className="btn btn-secondary" onClick={() => setEditando(false)}>Cancelar</button>
+                <button className="btn btn-success me-2" onClick={guardarCambios}>
+                  Guardar
+                </button>
+                <button className="btn btn-secondary" onClick={() => setEditando(false)}>
+                  Cancelar
+                </button>
               </>
             ) : (
-              <button className="btn btn-primary" onClick={() => setEditando(true)}>Editar perfil</button>
+              <button className="btn btn-primary" onClick={() => setEditando(true)}>
+                Editar perfil
+              </button>
             )}
           </div>
         </div>

@@ -59,6 +59,29 @@ export default function AdminClientes() {
     e.preventDefault();
     const { nombre, direccion, comuna, telefono, email, password } = form;
 
+    if (nombre.trim().length < 3 || nombre.trim().length > 50) {
+      Swal.fire("Nombre inválido", "Debe tener entre 3 y 50 caracteres", "warning");
+      return;
+    }
+    if (direccion.trim().length < 5 || direccion.trim().length > 100) {
+      Swal.fire("Dirección inválida", "Debe tener entre 5 y 100 caracteres", "warning");
+      return;
+    }
+    if (!regiones.flatMap(r => r.comunas).includes(comuna)) {
+      Swal.fire("Comuna inválida", "Seleccione una comuna válida", "warning");
+      return;
+    }
+    const regexTelefono = /^[0-9]{8,15}$/;
+    if (telefono && !regexTelefono.test(telefono)) {
+      Swal.fire("Teléfono inválido", "Debe tener entre 8 y 15 dígitos numéricos", "warning");
+      return;
+    }
+    const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{6,}$/;
+    if (!regexPassword.test(password)) {
+      Swal.fire("Contraseña insegura", "Debe tener al menos 6 caracteres con mayúscula, minúscula, número y símbolo", "warning");
+      return;
+    }
+
     try {
       const cred = await createUserWithEmailAndPassword(
         secondaryAuth,
@@ -108,15 +131,34 @@ export default function AdminClientes() {
   };
 
   const handleGuardarEdicion = async () => {
+    const { nombre, direccion, comuna, telefono } = editForm;
+    if (nombre.trim().length < 3 || nombre.trim().length > 50) {
+      Swal.fire("Nombre inválido", "Debe tener entre 3 y 50 caracteres", "warning");
+      return;
+    }
+    if (direccion.trim().length < 5 || direccion.trim().length > 100) {
+      Swal.fire("Dirección inválida", "Debe tener entre 5 y 100 caracteres", "warning");
+      return;
+    }
+    if (!regiones.flatMap(r => r.comunas).includes(comuna)) {
+      Swal.fire("Comuna inválida", "Seleccione una comuna válida", "warning");
+      return;
+    }
+    const regexTelefono = /^[0-9]{8,15}$/;
+    if (telefono && !regexTelefono.test(telefono)) {
+      Swal.fire("Teléfono inválido", "Debe tener entre 8 y 15 dígitos numéricos", "warning");
+      return;
+    }
+
     try {
       const ref = doc(db, "usuarios", editForm.id);
       const docSnap = await getDoc(ref);
       if (!docSnap.exists()) throw new Error("Cliente no encontrado");
       await updateDoc(ref, {
-        nombre: editForm.nombre,
-        direccion: editForm.direccion,
-        comuna: editForm.comuna,
-        telefono: editForm.telefono,
+        nombre,
+        direccion,
+        comuna,
+        telefono,
       });
       Swal.fire("Actualizado", "Cliente actualizado correctamente", "success");
       setShowModal(false);
@@ -139,18 +181,17 @@ export default function AdminClientes() {
       cargarClientes();
     }
   };
-  
+
   return (
     <div className="admin-background">
       <div className="admin-overlay">
         <div className="admin-card">
           <h3>Registrar Cliente</h3>
           <form onSubmit={handleCrearCliente} className="row g-2 mb-4">
-            {[
-              { name: "nombre", type: "text", max: 50 },
+            {[{ name: "nombre", type: "text", max: 50 },
               { name: "direccion", type: "text", max: 100 },
               { name: "comuna", type: "select" },
-              { name: "telefono", type: "number", max: 15 },
+              { name: "telefono", type: "tel", max: 15 },
               { name: "email", type: "email", max: 100 },
               { name: "password", type: "password", max: 20 },
             ].map((campo, i) => (
@@ -187,8 +228,7 @@ export default function AdminClientes() {
                     placeholder={
                       campo.name === "password"
                         ? "Contraseña"
-                        : campo.name.charAt(0).toUpperCase() +
-                          campo.name.slice(1)
+                        : campo.name.charAt(0).toUpperCase() + campo.name.slice(1)
                     }
                   />
                 )}
@@ -239,28 +279,24 @@ export default function AdminClientes() {
       </div>
 
       {showModal && editForm && (
-        <div
-          className="modal d-block"
-          tabIndex="-1"
-          style={{ background: "#00000080" }}
-        >
+        <div className="modal d-block" tabIndex="-1" style={{ background: "#00000080" }}>
           <div className="modal-dialog modal-lg">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Editar Cliente</h5>
-                <button
-                  className="btn-close"
-                  onClick={() => setShowModal(false)}
-                ></button>
+                <button className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>
               <div className="modal-body row g-2">
                 <div className="col-md-6">
                   <label className="form-label">Nombre</label>
                   <input
-                    name="nombre" 
+                    name="nombre"
                     className="form-control"
                     value={editForm.nombre}
                     onChange={handleEditChange}
+                    maxLength={50}
+                    minLength={3}
+                    required
                   />
                 </div>
                 <div className="col-md-6">
@@ -279,16 +315,21 @@ export default function AdminClientes() {
                     className="form-control"
                     value={editForm.direccion}
                     onChange={handleEditChange}
+                    minLength={5}
+                    maxLength={100}
+                    required
                   />
                 </div>
                 <div className="col-md-6">
                   <label className="form-label">Teléfono</label>
                   <input
                     name="telefono"
-                    type="number"
+                    type="tel"
                     className="form-control"
                     value={editForm.telefono}
                     onChange={handleEditChange}
+                    pattern="[0-9]{8,15}"
+                    maxLength={15}
                   />
                 </div>
                 <div className="col-md-12">
@@ -298,6 +339,7 @@ export default function AdminClientes() {
                     className="form-control"
                     value={editForm.comuna}
                     onChange={handleEditChange}
+                    required
                   >
                     <option value="">Seleccione Comuna</option>
                     {regiones.map((region, idx) => (
@@ -313,16 +355,10 @@ export default function AdminClientes() {
                 </div>
               </div>
               <div className="modal-footer">
-                <button
-                  className="btn btn-primary"
-                  onClick={handleGuardarEdicion}
-                >
+                <button className="btn btn-primary" onClick={handleGuardarEdicion}>
                   Guardar Cambios
                 </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setShowModal(false)}
-                >
+                <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
                   Cancelar
                 </button>
               </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"; 
 import {
   getDocs,
   deleteDoc,
@@ -42,6 +42,16 @@ export default function AdminAdministradores() {
   const handleCrear = async (e) => {
     e.preventDefault();
     const { nombre, email, password } = form;
+
+    if (nombre.trim().length < 3 || nombre.trim().length > 50) {
+      return Swal.fire("Nombre inválido", "Debe tener entre 3 y 50 caracteres", "warning");
+    }
+
+    const regexRobusta = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{6,}$/;
+    if (!regexRobusta.test(password)) {
+      return Swal.fire("Contraseña insegura", "Debe tener mayúscula, minúscula, número y símbolo", "warning");
+    }
+
     try {
       const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
       await sendEmailVerification(cred.user);
@@ -92,19 +102,26 @@ export default function AdminAdministradores() {
     try {
       const { id, nombre, email, password } = editForm;
 
+      if (nombre.trim().length < 3 || nombre.trim().length > 50) {
+        return Swal.fire("Nombre inválido", "Debe tener entre 3 y 50 caracteres", "warning");
+      }
+
+      if (user.email === email && password) {
+        const regexRobusta = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{6,}$/;
+        if (!regexRobusta.test(password)) {
+          return Swal.fire("Contraseña insegura", "Debe tener mayúscula, minúscula, número y símbolo", "warning");
+        }
+
+        await updatePassword(auth.currentUser, password);
+      }
+
       await setDoc(doc(db, "usuarios", id), {
         nombre,
         email,
         tipo: "admin"
       });
 
-      if (user.email === email && password) {
-        await updatePassword(auth.currentUser, password);
-        Swal.fire("Actualizado", "Perfil y contraseña actualizados", "success");
-      } else {
-        Swal.fire("Actualizado", "Perfil actualizado", "success");
-      }
-
+      Swal.fire("Actualizado", "Perfil actualizado correctamente", "success");
       setShowModal(false);
       setEditForm(null);
       cargarAdmins();
@@ -146,7 +163,6 @@ export default function AdminAdministradores() {
               <button className="btn btn-success">Crear Admin</button>
             </div>
           </form>
-
 
           <div style={{ maxHeight: "300px", overflowY: "auto" }}>
             <table className="table table-bordered bg-white">
@@ -196,7 +212,6 @@ export default function AdminAdministradores() {
         </div>
       </div>
 
-
       {showModal && editForm && (
         <div className="modal d-block" tabIndex="-1" style={{ background: "#00000080" }}>
           <div className="modal-dialog modal-lg">
@@ -211,6 +226,8 @@ export default function AdminAdministradores() {
                   <input
                     name="nombre"
                     className="form-control"
+                    minLength={3}
+                    maxLength={50}
                     value={editForm.nombre}
                     onChange={handleEditChange}
                   />
@@ -230,6 +247,8 @@ export default function AdminAdministradores() {
                     <input
                       name="password"
                       type="password"
+                      minLength={6}
+                      maxLength={30}
                       className="form-control"
                       value={editForm.password}
                       onChange={handleEditChange}

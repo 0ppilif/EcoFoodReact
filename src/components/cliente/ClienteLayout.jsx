@@ -1,55 +1,156 @@
 import React, { useEffect, useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
-import { getAuth, signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { getAuth, updatePassword } from "firebase/auth";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
-import "./clienteLayout.css";
+import Swal from "sweetalert2";
+import { useOutletContext } from "react-router-dom"; // 🔹 IMPORTANTE
 
-export default function ClienteLayout() {
-  const [nombreCliente, setNombreCliente] = useState("");
+const regiones = [
+  {
+    nombre: "Región de Coquimbo",
+    comunas: ["La Serena", "Coquimbo", "Vicuña", "Ovalle"],
+  },
+  {
+    nombre: "Región Metropolitana",
+    comunas: ["Santiago", "Puente Alto", "Maipú", "Las Condes"],
+  },
+];
+
+export default function EditarPerfil() {
   const auth = getAuth();
   const user = auth.currentUser;
-  const navigate = useNavigate();
+  const { actualizarNombreCliente } = useOutletContext(); // 🔹 Acceder desde el Layout
 
-  const obtenerNombreCliente = async () => {
-    if (!user) return;
-    const ref = doc(db, "usuarios", user.uid);
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
-      const data = snap.data();
-      setNombreCliente(data.nombre || user.email);
+  const [nombre, setNombre] = useState("");
+  const [direccion, setDireccion] = useState("");
+  const [comuna, setComuna] = useState("");
+  const [nuevaContrasena, setNuevaContrasena] = useState("");
+
+  useEffect(() => {
+    const obtenerDatos = async () => {
+      const ref = doc(db, "usuarios", user.uid);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        const data = snap.data();
+        setNombre(data.nombre || "");
+        setDireccion(data.direccion || "");
+        setComuna(data.comuna || "");
+      }
+    };
+    obtenerDatos();
+  }, [user]);
+
+  const validarFormulario = () => {
+    if (nombre.length > 50) {
+      Swal.fire("Error", "El nombre no debe exceder los 50 caracteres", "error");
+      return false;
+    }
+    if (direccion.length > 50) {
+      Swal.fire("Error", "La dirección no debe exceder los 50 caracteres", "error");
+      return false;
+    }
+    if (
+      nuevaContrasena &&
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*[^\w\s]).{6,}$/.test(nuevaContrasena)
+    ) {
+      Swal.fire(
+        "Error",
+        "La contraseña debe tener al menos 6 caracteres, incluyendo mayúscula, minúscula y un símbolo",
+        "error"
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const manejarEnvio = async (e) => {
+    e.preventDefault();
+    if (!validarFormulario()) return;
+
+    try {
+      const ref = doc(db, "usuarios", user.uid);
+      await updateDoc(ref, {
+        nombre,
+        direccion,
+        comuna,
+      });
+
+      if (nuevaContrasena) {
+        await updatePassword(user, nuevaContrasena);
+      }
+
+      // 🔄 Actualizar nombre en el layout inmediatamente
+      actualizarNombreCliente();
+
+      Swal.fire("Actualizado", "Tu perfil ha sido actualizado", "success");
+    } catch (error) {
+      Swal.fire("Error", "No se pudo actualizar tu perfil", "error");
     }
   };
 
-  const cerrarSesion = async () => {
-    await signOut(auth);
-    navigate("/login");
-  };
-
-  useEffect(() => {
-    obtenerNombreCliente();
-  }, [user]);
+  const comunasDisponibles = regiones.flatMap((r) => r.comunas);
 
   return (
-    <div className="fondo-cliente">
-      <nav className="navbar navbar-expand-lg navbar-dark bg-success">
-        <div className="container">
-          <span className="navbar-brand">EcoFood - {nombreCliente}</span>
-          <div className="ms-auto d-flex gap-2">
-            <button className="btn btn-outline-light" onClick={() => navigate("/cliente/dashboard")}>Inicio</button>
-            <button className="btn btn-outline-light" onClick={() => navigate("/cliente/productos")}>Productos</button>
-            <button className="btn btn-outline-light" onClick={() => navigate("/cliente/pedidos")}>Mis Pedidos</button>
-            <button className="btn btn-outline-light" onClick={() => navigate("/cliente/perfil")}>Editar Perfil</button>
-            <button className="btn btn-danger" onClick={cerrarSesion}>Cerrar Sesión</button>
-          </div>
+    <div className="container mt-4">
+      <h2 className="mb-4">Editar Perfil</h2>
+      <form onSubmit={manejarEnvio}>
+        <div className="mb-3">
+          <label className="form-label">Correo Electrónico</label>
+          <input type="email" className="form-control" value={user.email} disabled />
         </div>
-      </nav>
-
-      <main className="container">
-        <div className="contenedor-blanco">
-          <Outlet context={{ actualizarNombreCliente: obtenerNombreCliente }} />
+        <div className="mb-3">
+          <label className="form-label">Nombre</label>
+          <input
+            type="text"
+            className="form-control"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            maxLength={50}
+            required
+          />
         </div>
-      </main>
+        <div className="mb-3">
+          <label className="form-label">Dirección</label>
+          <input
+            type="text"
+            className="form-control"
+            value={direccion}
+            onChange={(e) => setDireccion(e.target.value)}
+            maxLength={50}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label className="form-label">Comuna</label>
+          <select
+            className="form-select"
+            value={comuna}
+            onChange={(e) => setComuna(e.target.value)}
+            required
+          >
+            <option value="">Selecciona una comuna</option>
+            {comunasDisponibles.map((c, i) => (
+              <option key={i} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="mb-3">
+          <label className="form-label">Nueva Contraseña (opcional)</label>
+          <input
+            type="password"
+            className="form-control"
+            value={nuevaContrasena}
+            onChange={(e) => setNuevaContrasena(e.target.value)}
+          />
+        </div>
+        <div className="text-end">
+          <button type="submit" className="btn btn-success">
+            Guardar Cambios
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

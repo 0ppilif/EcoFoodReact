@@ -10,7 +10,6 @@ import {
 } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { getAuth } from "firebase/auth";
-import EmpresaNavbar from "../../components/empresa/EmpresaNavbar";
 import ProductoModal from "../../components/empresa/ProductoModal";
 import Swal from "sweetalert2";
 import "../../styles/empresadashboard.css";
@@ -19,23 +18,19 @@ const ProductosEmpresa = () => {
   const [productos, setProductos] = useState([]);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [productoActual, setProductoActual] = useState(null);
-  const [empresaNombre, setEmpresaNombre] = useState("");
   const [empresaId, setEmpresaId] = useState("");
-  const [filtro, setFiltro] = useState("");
-  const [ordenAZ, setOrdenAZ] = useState("az");
-  const [soloDisponibles, setSoloDisponibles] = useState(false);
-  const [soloVisibles, setSoloVisibles] = useState(false);
-  const [soloNoVisibles, setSoloNoVisibles] = useState(false);
+  const [filtroEstado, setFiltroEstado] = useState("todos");
+  const [orden, setOrden] = useState("nombre_az");
+  const [itemsPorPagina, setItemsPorPagina] = useState(10);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [busqueda, setBusqueda] = useState("");
 
   const auth = getAuth();
   const user = auth.currentUser;
 
   const obtenerProductos = async () => {
     if (!user || !empresaId) return;
-    const q = query(
-      collection(db, "producto"),
-      where("empresaId", "==", empresaId)
-    );
+    const q = query(collection(db, "producto"), where("empresaId", "==", empresaId));
     const querySnapshot = await getDocs(q);
     const productosData = querySnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -44,20 +39,8 @@ const ProductosEmpresa = () => {
     setProductos(productosData);
   };
 
-  const obtenerDatosEmpresa = async () => {
-    if (!user) return;
-    setEmpresaId(user.uid);
-
-    const ref = doc(db, "usuarios", user.uid);
-    const snapshot = await getDocs(
-      query(collection(db, "usuarios"), where("uid", "==", user.uid))
-    );
-    const data = snapshot.docs[0]?.data();
-    if (data?.nombre) setEmpresaNombre(data.nombre);
-  };
-
   useEffect(() => {
-    if (user) obtenerDatosEmpresa();
+    if (user) setEmpresaId(user.uid);
   }, [user]);
 
   useEffect(() => {
@@ -107,27 +90,6 @@ const ProductosEmpresa = () => {
     obtenerProductos();
   };
 
-  const resetFiltros = () => {
-    setFiltro("");
-    setOrdenAZ("az");
-    setSoloDisponibles(false);
-    setSoloVisibles(false);
-    setSoloNoVisibles(false);
-  };
-
-  const productosFiltrados = productos
-    .filter((prod) =>
-      prod.nombre.toLowerCase().includes(filtro.toLowerCase())
-    )
-    .filter((prod) => (soloDisponibles ? prod.estado === "disponible" : true))
-    .filter((prod) => (soloVisibles ? prod.visible === true : true))
-    .filter((prod) => (soloNoVisibles ? prod.visible === false : true))
-    .sort((a, b) =>
-      ordenAZ === "az"
-        ? a.nombre.localeCompare(b.nombre)
-        : b.nombre.localeCompare(a.nombre)
-    );
-
   const calcularDiasRestantes = (fechaStr) => {
     const hoy = new Date();
     const vencimiento = new Date(fechaStr);
@@ -135,80 +97,100 @@ const ProductosEmpresa = () => {
     return Math.ceil(diferencia / (1000 * 60 * 60 * 24));
   };
 
+  const productosFiltrados = productos
+    .filter((prod) => prod.nombre.toLowerCase().includes(busqueda.toLowerCase()))
+    .filter((prod) => {
+      const diasRestantes = calcularDiasRestantes(prod.vencimiento);
+      if (filtroEstado === "disponibles") return prod.estado === "disponible";
+      if (filtroEstado === "por_vencer") return diasRestantes <= 3 && diasRestantes >= 0;
+      if (filtroEstado === "vencidos") return diasRestantes < 0;
+      return true;
+    })
+    .sort((a, b) => {
+      if (orden === "nombre_az") return a.nombre.localeCompare(b.nombre);
+      if (orden === "nombre_za") return b.nombre.localeCompare(a.nombre);
+      if (orden === "precio_asc") return a.precio - b.precio;
+      if (orden === "precio_desc") return b.precio - a.precio;
+      return 0;
+    });
+
+  const totalPaginas = Math.ceil(productosFiltrados.length / itemsPorPagina);
+  const productosPaginados = productosFiltrados.slice(
+    (paginaActual - 1) * itemsPorPagina,
+    paginaActual * itemsPorPagina
+  );
+
+  const cambiarPagina = (nuevaPagina) => {
+    if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas) {
+      setPaginaActual(nuevaPagina);
+    }
+  };
+
   return (
     <div className="empresa-background">
-      <EmpresaNavbar nombre={empresaNombre} />
       <div className="empresa-overlay">
         <div className="empresa-card">
           <h2 className="mb-4">Mis Productos</h2>
 
-          <div className="d-flex flex-wrap gap-2 justify-content-between mb-3 align-items-center">
+          <div className="d-flex flex-wrap gap-3 mb-3 align-items-center justify-content-between">
             <button className="btn btn-success" onClick={() => abrirModal()}>
               Agregar Producto
             </button>
 
             <input
               type="text"
-              className="form-control w-25"
+              className="form-control w-auto"
               placeholder="Buscar por nombre..."
-              value={filtro}
-              onChange={(e) => setFiltro(e.target.value)}
+              value={busqueda}
+              onChange={(e) => {
+                setBusqueda(e.target.value);
+                setPaginaActual(1);
+              }}
             />
 
             <select
               className="form-select w-auto"
-              value={ordenAZ}
-              onChange={(e) => setOrdenAZ(e.target.value)}
+              value={filtroEstado}
+              onChange={(e) => {
+                setFiltroEstado(e.target.value);
+                setPaginaActual(1);
+              }}
             >
-              <option value="az">Orden A-Z</option>
-              <option value="za">Orden Z-A</option>
+              <option value="todos">Todos</option>
+              <option value="disponibles">Disponibles</option>
+              <option value="por_vencer">Por vencer</option>
+              <option value="vencidos">Vencidos</option>
             </select>
 
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                id="checkDisponibles"
-                checked={soloDisponibles}
-                onChange={() => setSoloDisponibles(!soloDisponibles)}
-              />
-              <label className="form-check-label" htmlFor="checkDisponibles">
-                Solo disponibles
-              </label>
-            </div>
+            <select
+              className="form-select w-auto"
+              value={orden}
+              onChange={(e) => {
+                setOrden(e.target.value);
+                setPaginaActual(1);
+              }}
+            >
+              <option value="nombre_az">Nombre A-Z</option>
+              <option value="nombre_za">Nombre Z-A</option>
+              <option value="precio_asc">Precio ascendente</option>
+              <option value="precio_desc">Precio descendente</option>
+            </select>
 
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                id="checkVisibles"
-                checked={soloVisibles}
-                onChange={() => setSoloVisibles(!soloVisibles)}
-              />
-              <label className="form-check-label" htmlFor="checkVisibles">
-                Solo visibles
-              </label>
-            </div>
-
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                id="checkNoVisibles"
-                checked={soloNoVisibles}
-                onChange={() => setSoloNoVisibles(!soloNoVisibles)}
-              />
-              <label className="form-check-label" htmlFor="checkNoVisibles">
-                Solo no visibles
-              </label>
-            </div>
-
-            <button className="btn btn-secondary" onClick={resetFiltros}>
-              Quitar Filtros
-            </button>
+            <select
+              className="form-select w-auto"
+              value={itemsPorPagina}
+              onChange={(e) => {
+                setItemsPorPagina(Number(e.target.value));
+                setPaginaActual(1);
+              }}
+            >
+              <option value={5}>5 por página</option>
+              <option value={10}>10 por página</option>
+              <option value={20}>20 por página</option>
+            </select>
           </div>
 
-          {productosFiltrados.length === 0 ? (
+          {productosPaginados.length === 0 ? (
             <p>No hay productos registrados.</p>
           ) : (
             <div className="productos-scroll table-responsive">
@@ -226,7 +208,7 @@ const ProductosEmpresa = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {productosFiltrados.map((prod) => {
+                  {productosPaginados.map((prod) => {
                     const diasRestantes = calcularDiasRestantes(prod.vencimiento);
                     const estaVencido = diasRestantes < 0;
                     const filaClase =
@@ -238,12 +220,8 @@ const ProductosEmpresa = () => {
 
                     return (
                       <tr key={prod.id} className={filaClase}>
-                        <td className="text-truncate max-width-td" title={prod.nombre}>
-                          {prod.nombre}
-                        </td>
-                        <td className="text-truncate max-width-td" title={prod.descripcion}>
-                          {prod.descripcion}
-                        </td>
+                        <td>{prod.nombre}</td>
+                        <td>{prod.descripcion}</td>
                         <td>
                           {prod.vencimiento}
                           {diasRestantes <= 3 && diasRestantes >= 0 && (
@@ -298,6 +276,26 @@ const ProductosEmpresa = () => {
               </table>
             </div>
           )}
+
+          <div className="d-flex justify-content-between align-items-center mt-3">
+            <button
+              className="btn btn-outline-secondary btn-sm"
+              onClick={() => cambiarPagina(paginaActual - 1)}
+              disabled={paginaActual === 1}
+            >
+              Anterior
+            </button>
+            <span>
+              Página {paginaActual} de {totalPaginas}
+            </span>
+            <button
+              className="btn btn-outline-secondary btn-sm"
+              onClick={() => cambiarPagina(paginaActual + 1)}
+              disabled={paginaActual === totalPaginas}
+            >
+              Siguiente
+            </button>
+          </div>
 
           {mostrarModal && (
             <ProductoModal

@@ -25,8 +25,9 @@ export default function RecuperarContraseña() {
   };
 
   return (
-    <div className="container mt-5">
-      <h2>Recuperar Contraseña</h2>
+  <div className="container d-flex justify-content-center align-items-center vh-100">
+    <div className="card p-4 shadow" style={{ maxWidth: "400px", width: "100%" }}>
+      <h3 className="text-center mb-3">Recuperar Contraseña</h3>
       <form onSubmit={handleReset}>
         <div className="mb-3">
           <label className="form-label">Correo electrónico</label>
@@ -38,10 +39,17 @@ export default function RecuperarContraseña() {
             required
           />
         </div>
-        <button type="submit" className="btn btn-warning">
+        <button type="submit" className="btn btn-warning w-100">
           Enviar correo de recuperación
         </button>
       </form>
+      <button
+        className="btn btn-outline-secondary mt-3 w-100"
+        onClick={() => navigate("/login")}
+      >
+        Volver
+      </button>
     </div>
-  );
+  </div>
+)
 }

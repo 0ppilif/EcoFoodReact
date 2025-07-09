@@ -14,107 +14,116 @@ import EmpresaModal from "../../components/EmpresaModal";
 import "../../styles/adminBackground.css";
 
 const regiones = [
-  {
-    nombre: "Región de Coquimbo",
-    comunas: ["La Serena", "Coquimbo", "Vicuña", "Ovalle"],
-  },
-  {
-    nombre: "Región Metropolitana",
-    comunas: ["Santiago", "Puente Alto", "Maipú", "Las Condes"],
-  },
+  { nombre: "Región de Coquimbo", comunas: ["La Serena","Coquimbo","Vicuña","Ovalle"]},
+  { nombre: "Región Metropolitana", comunas: ["Santiago","Puente Alto","Maipú","Las Condes"]},
 ];
+
+const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{6,}$/;
+const regexRut = /^\d{7,8}-[\dkK]$/;
 
 export default function AdminEmpresas() {
   const [empresas, setEmpresas] = useState([]);
   const [form, setForm] = useState({
-    nombre: "",
-    rut: "",
-    direccion: "",
-    comuna: "",
-    email: "",
-    telefono: "",
-    password: ""
+    nombre: "", rut: "", direccion: "", comuna: "",
+    email: "", telefono: "", password: ""
   });
-
   const [empresaSeleccionada, setEmpresaSeleccionada] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  const cargarEmpresas = async () => {
+  useEffect(() => cargarEmpresas(), []);
+
+  async function cargarEmpresas() {
     const data = await obtenerEmpresas();
     setEmpresas(data);
-  };
+  }
 
-  useEffect(() => {
-    cargarEmpresas();
-  }, []);
-
-  const handleChange = (e) => {
+  function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  }
 
-  const handleCrearEmpresa = async (e) => {
+  async function handleCrearEmpresa(e) {
     e.preventDefault();
     const { nombre, rut, direccion, comuna, email, telefono, password } = form;
+
+    if (nombre.trim().length < 3 || nombre.trim().length > 50)
+      return Swal.fire("Nombre inválido","3 a 50 caracteres","warning");
+
+    if (!regexRut.test(rut))
+      return Swal.fire("RUT inválido","Formato 12345678-9","warning");
+
+    if (direccion.trim().length < 5 || direccion.trim().length > 100)
+      return Swal.fire("Dirección inválida","5 a 100 caracteres","warning");
+
+    if (comuna === "")
+      return Swal.fire("Seleccione comuna","Campo requerido","warning");
+
+    if (!regexEmail.test(email))
+      return Swal.fire("Email inválido","Introduce un email válido","warning");
+
+    if (!/^\d{8,15}$/.test(telefono))
+      return Swal.fire("Teléfono inválido","8 a 15 dígitos","warning");
+
+    if (!regexPassword.test(password))
+      return Swal.fire("Contraseña insegura",
+        "Debe incluir mayúscula, minúscula, número y símbolo","warning");
 
     try {
       const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
       await sendEmailVerification(cred.user);
-
       await setDoc(doc(db, "usuarios", cred.user.uid), {
-        nombre,
-        rut,
-        direccion,
-        comuna,
-        email,
-        telefono,
-        tipo: "empresa"
+        nombre, rut, direccion, comuna, email, telefono, tipo: "empresa"
       });
-
-      Swal.fire("Empresa creada", "Se envió un correo de verificación", "success");
-      setForm({
-        nombre: "", rut: "", direccion: "", comuna: "",
-        email: "", telefono: "", password: ""
-      });
+      Swal.fire("Empresa creada","Correo de verificación enviado","success");
+      setForm({ nombre:"", rut:"",direccion:"",comuna:"",email:"",telefono:"",password:"" });
       cargarEmpresas();
-    } catch (error) {
-      if (error.code === "auth/email-already-in-use") {
-        Swal.fire("Error", "El correo ya está registrado como empresa o administrador", "error");
-      } else {
-        Swal.fire("Error", error.message, "error");
+    } catch (err) {
+      Swal.fire("Error",err.code==="auth/email-already-in-use"
+        ? "Correo ya registrado":"hubo un error","error");
+    }
+  }
+
+  function handleEliminar(id) {
+    Swal.fire({
+      title: "¿Eliminar empresa?", icon: "warning",
+      showCancelButton:true, confirmButtonText:"Sí, eliminar"
+    }).then(res => {
+      if (res.isConfirmed) {
+        eliminarEmpresa(id).then(cargarEmpresas);
       }
-    }
-  };
-
-  const handleEliminar = async (id) => {
-    const confirm = await Swal.fire({
-      title: "¿Eliminar empresa?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Sí, eliminar"
     });
+  }
 
-    if (confirm.isConfirmed) {
-      await eliminarEmpresa(id);
-      cargarEmpresas();
-    }
-  };
-
-  const handleEditar = (empresa) => {
-    setEmpresaSeleccionada(empresa);
+  function handleEditar(emp) {
+    setEmpresaSeleccionada(emp);
     setShowModal(true);
-  };
+  }
 
-  const guardarCambios = async (actualizada) => {
+  async function guardarCambios(actualizada) {
+    const { nombre, direccion, comuna, telefono, id } = actualizada;
+
+    if (nombre.trim().length < 3 || nombre.trim(). length > 50)
+      return Swal.fire("Nombre inválido","3 a 50 caracteres","warning");
+
+    if (direccion.trim().length < 5 || direccion.trim().length > 100)
+      return Swal.fire("Dirección inválida","5 a 100 caracteres","warning");
+
+    if (comuna === "")
+      return Swal.fire("Seleccione comuna","Campo requerido","warning");
+
+    if (!/^\d{8,15}$/.test(telefono))
+      return Swal.fire("Teléfono inválido","8 a 15 dígitos","warning");
+
     try {
-      const ref = doc(db, "usuarios", actualizada.id);
-      const { nombre, direccion, comuna, telefono } = actualizada;
+      const ref = doc(db, "usuarios", id);
       await updateDoc(ref, { nombre, direccion, comuna, telefono });
-      Swal.fire("Actualizado", "Los datos fueron guardados", "success");
+      Swal.fire("Actualizado","Datos guardados","success");
+      setShowModal(false);
       cargarEmpresas();
-    } catch (error) {
-      Swal.fire("Error", error.message, "error");
+    } catch (err) {
+      Swal.fire("Error", err.message, "error");
     }
-  };
+  }
 
   return (
     <div className="admin-background">
@@ -123,36 +132,23 @@ export default function AdminEmpresas() {
           <h3>Registrar Empresa</h3>
           <form onSubmit={handleCrearEmpresa} className="row g-2 mb-4">
             {[
-              { name: "nombre", type: "text", max: 50 },
-              { name: "rut", type: "text", max: 12 },
-              { name: "direccion", type: "text", max: 100 },
-              { name: "comuna", type: "select" },
-              { name: "email", type: "email", max: 100 },
-              { name: "telefono", type: "number", max: 15 },
-              { name: "password", type: "password", max: 20 }
-            ].map((campo, i) => (
+              { name:"nombre", type:"text" },
+              { name:"rut", type:"text" },
+              { name:"direccion", type:"text" },
+              { name:"comuna", type:"select" },
+              { name:"email", type:"email" },
+              { name:"telefono", type:"tel" },
+              { name:"password", type:"password" }
+            ].map((campo,i)=>(
               <div className="col-md-6" key={i}>
-                {campo.name === "comuna" ? (
-                  <select
-                    name="comuna"
-                    required
-                    className="form-control"
-                    value={form.comuna}
-                    onChange={(e) => {
-                      e.target.setCustomValidity("");
-                      handleChange(e);
-                    }}
-                    onInvalid={(e) =>
-                      e.target.setCustomValidity("Selecciona una comuna")
-                    }
-                  >
+                {campo.name==="comuna" ? (
+                  <select name="comuna" required className="form-control"
+                    value={form.comuna} onChange={handleChange}>
                     <option value="">Seleccione Comuna</option>
-                    {regiones.map((region, idx) => (
-                      <optgroup key={idx} label={region.nombre}>
-                        {region.comunas.map((comuna, j) => (
-                          <option key={j} value={comuna}>
-                            {comuna}
-                          </option>
+                    {regiones.map((r,j)=>(
+                      <optgroup key={j} label={r.nombre}>
+                        {r.comunas.map(c=>(
+                          <option key={c} value={c}>{c}</option>
                         ))}
                       </optgroup>
                     ))}
@@ -161,56 +157,54 @@ export default function AdminEmpresas() {
                   <input
                     name={campo.name}
                     type={campo.type}
-                    maxLength={campo.max}
-                    minLength={campo.name === "password" ? 6 : undefined}
-                    required={campo.name !== "telefono"}
                     className="form-control"
                     value={form[campo.name]}
                     onChange={handleChange}
-                    placeholder={
-                      campo.name === "password"
-                        ? "Contraseña"
-                        : campo.name.charAt(0).toUpperCase() + campo.name.slice(1)
+                    required={campo.name !== "telefono"}
+                    placeholder={campo.name.charAt(0).toUpperCase() + campo.name.slice(1)}
+                    minLength={
+                      campo.name === "nombre" ? 3 :
+                      campo.name === "direccion" ? 5 :
+                      campo.name === "rut" ? 9 :
+                      campo.name === "password" ? 6 :
+                      campo.name === "telefono" ? 8 :
+                      undefined
+                    }
+                    maxLength={
+                      campo.name === "nombre" ? 50 :
+                      campo.name === "direccion" ? 100 :
+                      campo.name === "rut" ? 10 :
+                      campo.name === "email" ? 100 :
+                      campo.name === "telefono" ? 15 :
+                      campo.name === "password" ? 30 :
+                      undefined
                     }
                   />
                 )}
               </div>
             ))}
-            <div className="col-md-12">
+            <div className="col-12">
               <button className="btn btn-success">Crear Empresa</button>
             </div>
           </form>
 
           <h4>Empresas Registradas</h4>
-          <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+          <div style={{maxHeight:"300px",overflowY:"auto"}}>
             <table className="table table-bordered bg-white">
-              <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th>Email</th>
-                  <th>Comuna</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
+              <thead><tr>
+                <th>Nombre</th><th>Email</th><th>Comuna</th><th>Acciones</th>
+              </tr></thead>
               <tbody>
-                {empresas.map((e) => (
+                {empresas.map(e=>(
                   <tr key={e.id}>
                     <td>{e.nombre}</td>
                     <td>{e.email}</td>
                     <td>{e.comuna}</td>
                     <td>
-                      <button
-                        className="btn btn-warning btn-sm me-1"
-                        onClick={() => handleEditar(e)}
-                      >
-                        Editar
-                      </button>
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() => handleEliminar(e.id)}
-                      >
-                        Eliminar
-                      </button>
+                      <button className="btn btn-warning btn-sm me-1"
+                        onClick={()=>handleEditar(e)}>Editar</button>
+                      <button className="btn btn-danger btn-sm"
+                        onClick={()=>handleEliminar(e.id)}>Eliminar</button>
                     </td>
                   </tr>
                 ))}
@@ -220,7 +214,7 @@ export default function AdminEmpresas() {
 
           <EmpresaModal
             show={showModal}
-            handleClose={() => setShowModal(false)}
+            handleClose={()=>setShowModal(false)}
             empresa={empresaSeleccionada}
             onSave={guardarCambios}
           />

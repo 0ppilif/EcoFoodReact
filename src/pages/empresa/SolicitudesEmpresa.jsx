@@ -11,24 +11,12 @@ import {
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import Swal from "sweetalert2";
-import EmpresaNavbar from "../../components/empresa/EmpresaNavbar";
 import "../../styles/empresadashboard.css";
 
 export default function SolicitudesEmpresa() {
   const [solicitudes, setSolicitudes] = useState([]);
-  const [empresaNombre, setEmpresaNombre] = useState("");
   const auth = getAuth();
   const empresaId = auth.currentUser?.uid;
-
-  const obtenerDatosEmpresa = async () => {
-    if (!empresaId) return;
-    const ref = doc(db, "usuarios", empresaId);
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
-      const data = snap.data();
-      setEmpresaNombre(data.nombre || "Empresa");
-    }
-  };
 
   const obtenerSolicitudes = async () => {
     if (!empresaId) return;
@@ -83,13 +71,11 @@ export default function SolicitudesEmpresa() {
   };
 
   useEffect(() => {
-    obtenerDatosEmpresa();
     obtenerSolicitudes();
   }, []);
 
   return (
     <div className="empresa-background">
-      <EmpresaNavbar nombre={empresaNombre} />
       <div className="empresa-overlay">
         <div className="empresa-card">
           <h2 className="mb-4">Solicitudes de Productos</h2>
