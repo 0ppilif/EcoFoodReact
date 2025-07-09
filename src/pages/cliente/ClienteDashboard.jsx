@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getAuth } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
-import "../../styles/empresadashboard.css";
+import "../../styles/empresaDashboard.css";
 
 export default function ClienteDashboard() {
   const auth = getAuth();

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import empresaService from "../../services/empresaService";
 import EmpresaNavbar from "../../components/empresa/EmpresaNavbar";
-import "../../styles/empresadashboard.css";
+import "../../styles/empresaDashboard.css";
 
 const PerfilEmpresa = () => {
   const [empresa, setEmpresa] = useState(null);

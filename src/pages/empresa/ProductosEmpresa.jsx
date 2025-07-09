@@ -12,7 +12,7 @@ import { db } from "../../services/firebase";
 import { getAuth } from "firebase/auth";
 import ProductoModal from "../../components/empresa/ProductoModal";
 import Swal from "sweetalert2";
-import "../../styles/empresadashboard.css";
+import "../../styles/empresaDashboard.css";
 
 const ProductosEmpresa = () => {
   const [productos, setProductos] = useState([]);

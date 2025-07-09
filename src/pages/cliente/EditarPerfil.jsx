@@ -4,7 +4,7 @@ import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import Swal from "sweetalert2";
 import { useOutletContext } from "react-router-dom";
-import "../../styles/empresadashboard.css";
+import "../../styles/empresaDashboard.css";
 
 const regiones = [
   {

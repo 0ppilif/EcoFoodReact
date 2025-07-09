@@ -11,7 +11,7 @@ import {
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import Swal from "sweetalert2";
-import "../../styles/empresadashboard.css";
+import "../../styles/empresaDashboard.css";
 
 export default function SolicitudesEmpresa() {
   const [solicitudes, setSolicitudes] = useState([]);

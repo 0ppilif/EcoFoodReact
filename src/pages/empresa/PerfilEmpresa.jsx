@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
-import "../../styles/empresadashboard.css";
+import "../../styles/empresaDashboard.css";
 import Swal from "sweetalert2";
 
 const regiones = [
